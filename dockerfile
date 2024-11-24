@@ -15,4 +15,4 @@ RUN pip install -r requirements.txt
 COPY . ./
 
 # Jalankan aplikasi menggunakan gunicorn
-CMD ["gunicorn", "--bind", ":$PORT", "--workers", "1", "--threads", "8", "--timeout", "0", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
