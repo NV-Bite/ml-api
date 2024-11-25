@@ -11,8 +11,7 @@ WORKDIR $APP_HOME
 COPY . ./
 
 # Salin requirements.txt dan install dependencies
-COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 # Jalankan aplikasi menggunakan gunicorn
-CMD exec gunicorn -- bind :$PORT -- workers 1 -- threads 8 -- timeout 0 app:app
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
