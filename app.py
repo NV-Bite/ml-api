@@ -8,6 +8,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.xception import preprocess_input as xception_preprocess_input
 import time
 from google.cloud import storage
+from google.cloud import secretmanager
 import uuid
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, SafetySetting
@@ -30,6 +31,23 @@ LOCATION = "asia-southeast1"
 MODEL_ID = "gemini-1.5-flash"
 
 model = None
+
+# Mengakses Secret dari Secret Manager
+
+
+def get_secret(secret_name):
+    client = secretmanager.SecretManagerServiceClient()
+    project_id = os.getenv('PROJECT_ID')
+    secret_version = f'projects/{project_id}/secrets/{secret_name}/versions/latest'
+    response = client.access_secret_version(name=secret_version)
+    return response.payload.data.decode('UTF-8')
+
+
+# Setel kredensial Google Cloud dari Secret Manager
+credentials_json = get_secret('GOOGLE_APPLICATION_CREDENTIALS')
+with open('/tmp/credentials.json', 'w') as f:
+    f.write(credentials_json)
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/credentials.json'
 
 # Download model from GCS
 
