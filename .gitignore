@@ -1,2 +1,4 @@
 deployenv
 __pycache__
+credentials.json
+.env
