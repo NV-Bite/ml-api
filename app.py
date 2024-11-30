@@ -43,15 +43,7 @@ def get_secret(secret_name):
     return response.payload.data.decode('UTF-8')
 
 
-# Setel kredensial Google Cloud dari Secret Manager
-credentials_json = get_secret('GOOGLE_APPLICATION_CREDENTIALS')
-with open('/tmp/credentials.json', 'w') as f:
-    f.write(credentials_json)
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/credentials.json'
-
 # Download model from GCS
-
-
 def download_model_from_gcs():
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
