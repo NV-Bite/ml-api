@@ -23,11 +23,11 @@ app.config["UPLOAD_FOLDER"] = "static/uploads"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Configure Google Cloud Storage
-BUCKET_NAME = "bucket_model_xception"
+BUCKET_NAME = "bucket_nvbite"
 MODEL_PATH = "model_xception.keras"
 
 # Configure Vertex AI
-PROJECT_ID = "certain-tendril-443210-c3"
+PROJECT_ID = "nvbite-ef63c"
 LOCATION = "asia-southeast1"
 MODEL_ID = "gemini-1.5-flash"
 
