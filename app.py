@@ -12,6 +12,7 @@ from google.cloud import secretmanager
 import uuid
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, SafetySetting
+import markdown
 
 app = Flask(__name__)
 
@@ -22,11 +23,11 @@ app.config["UPLOAD_FOLDER"] = "static/uploads"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Configure Google Cloud Storage
-BUCKET_NAME = "bucket_nvbite"
+BUCKET_NAME = "bucket_model_xception"
 MODEL_PATH = "model_xception.keras"
 
 # Configure Vertex AI
-PROJECT_ID = "nvbite-ef63c"
+PROJECT_ID = "certain-tendril-443210-c3"
 LOCATION = "asia-southeast1"
 MODEL_ID = "gemini-1.5-flash"
 
@@ -117,8 +118,8 @@ Tomat kontribusi: lahan 0.370, pertanian 0.710, pakan 0.000, pemrosesan 0.010, t
 Tepung Roti kontribusi: lahan 0.100, pertanian 0.820, pakan 0.000, pemrosesan 0.210, transportasi 0.130, ritel 0.060, pengemasan 0.090, pemborosan 0.180.
 ```  
 3. **Rincian Emisi Karbon**
-   - rincian detail dari setiap bahan sesuai dengan data yang saya berikan
-   - buat dalam tabel untuk summary hasil akhir dengan persentase kontribusi setiap bahan buat simpel jangan terlalu panjang 3 colom saja
+   - rincian detail dari setiap bahan sesuai dengan data yang saya berikan jangan gunakan tabel untuk bagian ini
+   - buat dalam tabel untuk summary hasil akhir dengan persentase kontribusi setiap bahan buat simpel jangan terlalu panjang 3 colom saja buat ringkas
 4. **Saran Keberlanjutan**:  
    - Berikan tips keberlanjutan yang spesifik, misalnya:  
      - 🌱 Kurangi makanan berlebih.  
@@ -275,6 +276,10 @@ def generate_text(predicted_class):
     generated_text = ""
     for response in responses:
         generated_text += response.text
+        # Convert markdown to HTML
+    html_content = markdown.markdown(
+        generated_text, extensions=["tables"])
+    generated_text = html_content.replace("\n", "")
     return generated_text
 
 
