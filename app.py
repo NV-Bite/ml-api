@@ -13,6 +13,8 @@ import uuid
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, SafetySetting
 import markdown
+import json
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -22,26 +24,37 @@ app.config["UPLOAD_FOLDER"] = "static/uploads"
 # Create upload directory if it doesn't exist
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# Configure Google Cloud Storage
-BUCKET_NAME = "bucket_nvbite"
-MODEL_PATH = "model_xception.keras"
-
-# Configure Vertex AI
-PROJECT_ID = "nvbite-ef63c"
-LOCATION = "asia-southeast1"
-MODEL_ID = "gemini-1.5-flash"
 
 model = None
 
-# Mengakses Secret dari Secret Manager
+load_dotenv()
 
 
-def get_secret(secret_name):
+def get_secret(secret_name, project_id=None):
     client = secretmanager.SecretManagerServiceClient()
     project_id = os.getenv('PROJECT_ID')
+    if not project_id:
+        raise ValueError("PROJECT_ID environment variable is not set.")
     secret_version = f'projects/{project_id}/secrets/{secret_name}/versions/latest'
     response = client.access_secret_version(name=secret_version)
     return response.payload.data.decode('UTF-8')
+
+
+# Get credentials from Secret Manager
+credentials_json = get_secret("GOOGLE_APPLICATION_CREDENTIALS")
+
+# Parse file JSON
+credentials = json.loads(credentials_json)
+
+# Configure Google Cloud Storage
+BUCKET_NAME = credentials['bucket_name']
+MODEL_PATH = credentials['model_path']
+
+# Configure Vertex AI
+PROJECT_ID = credentials['project_id']
+print(f"Project ID: {PROJECT_ID}")
+LOCATION = credentials['location']
+MODEL_ID = "gemini-1.5-flash"
 
 
 # Download model from GCS
@@ -49,18 +62,20 @@ def download_model_from_gcs():
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
     blob = bucket.blob(MODEL_PATH)
-    blob.download_to_filename("model_xception.keras")
-    print("Model downloaded from GCS")
+    model_dir = "model"
+    os.makedirs(model_dir, exist_ok=True)
+    model_path = os.path.join(model_dir, "model_xception.keras")
+    blob.download_to_filename(model_path)
+    print(f"Model downloaded from GCS and saved to {model_path}")
+    return model_path
 
-# Load model
 
-
+# Load the model
 def load_model():
     global model
     if model is None:
-        download_model_from_gcs()
-        model = tf.keras.models.load_model(
-            "model_xception.keras", compile=False)
+        model_path = download_model_from_gcs()
+        model = tf.keras.models.load_model(model_path, compile=False)
 
 
 # Load the model once during initialization
@@ -76,6 +91,7 @@ class_labels = ['Ayam Goreng', 'Burger', 'French Fries', 'Gado-Gado', 'Ikan Gore
                 'Mie Goreng', 'Nasi Goreng', 'Nasi Padang', 'Pizza', 'Rawon',
                 'Rendang', 'Sate', 'Soto Ayam']
 
+# Text generation settings
 textsi_1 = """Anda adalah asisten pintar berbahasa Indonesia yang ahli dalam menghitung jejak karbon dari makanan atau struk makanan dan breakdown bahan bahan pada makanan nya lalu cocokan bahan bahan itu dengan yang ada dalam data emisi yg saya berikan di bawah. Berikut adalah instruksi untuk tugas Anda:
 ### **Instruksi Tugas**  
 berikan penjelasan singkat maksud carbon emisi pada makanan yaitu proses dari produksi sampai di plate
@@ -237,8 +253,8 @@ def predict_image():
 
 def preprocess_image(image_path):
     img = load_img(image_path, target_size=(300, 300))
-    img_array = img_to_array(img)  # Konversi gambar menjadi array
-    img_array = np.expand_dims(img_array, axis=0)  # Tambah dimensi batch
+    img_array = img_to_array(img)  # Convert to numpy array
+    img_array = np.expand_dims(img_array, axis=0)  # Expand dimension
     img_array = xception_preprocess_input(
         img_array)  # Preprocessing sesuai Xception
     return img_array
@@ -246,9 +262,9 @@ def preprocess_image(image_path):
 
 def decode_prediction(prediction):
     predicted_class_index = np.argmax(prediction)
-    predicted_class = class_labels[predicted_class_index]  # Ambil nama kelas
+    predicted_class = class_labels[predicted_class_index]  # Get name Class
     confidence = prediction[0][predicted_class_index] * \
-        100  # Hitung confidence dalam persen
+        100  # Get confidence
     confidence = round(confidence, 1)
     return predicted_class, confidence
 
@@ -276,7 +292,7 @@ def generate_text(predicted_class):
     generated_text = ""
     for response in responses:
         generated_text += response.text
-        # Convert markdown to HTML
+    # Convert markdown to HTML
     html_content = markdown.markdown(
         generated_text, extensions=["tables"])
     generated_text = html_content.replace("\n", "")
