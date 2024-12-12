@@ -45,7 +45,7 @@ To run this API on your local computer, follow these steps:
 
   ```json
   {
-    "file": "sate-image.jpg"
+    "image": "sate-image.jpg"
   }
   ```
 
