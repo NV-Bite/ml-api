@@ -30,7 +30,7 @@ To run this API on your local computer, follow these steps:
     ```
 3. Start the server
    ```bash
-    python app.py
+    flask run
     ```
 4. The API will be running on http://127.0.0.1:5000 
 5. You can test the API using Postman or any other API testing tool.
