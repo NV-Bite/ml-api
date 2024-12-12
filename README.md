@@ -1,4 +1,4 @@
-# ML-API
+# NV BITE MACHINE LEARNING API
 
 ## Tools
 
@@ -6,38 +6,64 @@
 - [Flask](https://flask.palletsprojects.com/)
 - [Postman](https://www.postman.com/)
 
-## Library
+```markdown
+# Tech We Use in Capstone Project
 
-- [Tensorflow](https://www.tensorflow.org/)
-- [Flask-RESTful](https://flask-restful.readthedocs.io/en/latest/)
-- [Gunicorn](https://flask.palletsprojects.com/en/3.0.x/deploying/gunicorn/)
-- [Numpy](https://numpy.org/)
-- [Pillow](https://pillow.readthedocs.io/en/stable/)
-- [Pandas](https://pandas.pydata.org/)
-- [Scikit-learn](https://scikit-learn.org/stable/)
-
-# Installation
-
-1. Clone repository
-
-```
-git clone https://github.com/NV-Bite/ml-api.git
+- Tensorflow (Machine Learning Library)
+- Flask (Python API Framework)
+- numpy (Scientific Computing Library)
+- Pillow (Image Processing Library)
+- Cloud Run (API Deployment)
 ```
 
-2. Install dependencies
+## Getting Started
 
-```
-pip install -r requirements.txt
-```
+To run this API on your local computer, follow these steps:
 
-3. Build and run the project
+1. Clone this repository
+   ```bash
+    git clone https://github.com/NV-Bite/ml-api.git
+    ```
+2. Install the required depedencies
+   ```bash
+    pip install -r requirements.txt
+    ```
+3. Start the server
+   ```bash
+    python app.py
+    ```
+4. The API will be running on http://127.0.0.1:5000 
+5. You can test the API using Postman or any other API testing tool.
 
-```
-flask run
-```
+## Endpoints
 
-Navigate to http://127.0.0.1:5000
+- **Predict**
+  <pre>POST /predict_image</pre>
+  <pre>Content-Type: multipart/form-data</pre>
 
+  Request Body:
+
+  ```json
+  {
+    "file": "sate-image.jpg"
+  }
+  ```
+
+  Response Body:
+
+  ```json
+  {
+    "response": {
+      "code": 200,
+      "data": {
+        "confidence": 0.9954487681388855,
+        "label": "Organic-Waste"
+      },
+      "error": false,
+      "message": "Waste successfully predicted!"
+    }
+  }
+  ```
 ## API Documentation
 
 We published our API documentation from Postman, you can view it [here](https://documenter.getpostman.com/view/39512380/2sAYHwL5qp)
