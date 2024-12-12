@@ -38,13 +38,6 @@ flask run
 
 Navigate to http://127.0.0.1:5000
 
-## Model Machine Learning
-
-For machine learning models we use models with h5 and pkl formats. The h5 model is loaded using the Tensorflow module and the pkl model is loaded using the Python Pickle built-in module.
-
-- [Tensorflow](https://www.tensorflow.org/)
-- [Pickle](https://docs.python.org/3/library/pickle.html)
-
 ## API Documentation
 
 We published our API documentation from Postman, you can view it [here](https://documenter.getpostman.com/view/39512380/2sAYHwL5qp)
