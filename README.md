@@ -1,11 +1,5 @@
 # NV BITE MACHINE LEARNING API
 
-## Tools
-
-- [Google Cloud Platform](https://cloud.google.com/)
-- [Docker](https://docs.docker.com/manuals/)
-- [Postman](https://www.postman.com/)
-
 ```markdown
 # Tech We Use in Capstone Project
 
@@ -15,6 +9,12 @@
 - Pillow (Image Processing Library)
 - Cloud Run (API Deployment)
 ```
+
+## Tools
+
+- [Google Cloud Platform](https://cloud.google.com/)
+- [Docker](https://docs.docker.com/manuals/)
+- [Postman](https://www.postman.com/)
 
 ## Getting Started
 
