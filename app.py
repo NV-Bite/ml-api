@@ -153,7 +153,7 @@ Sekarang lakukan langkah kecil dengan cara Donasikan makanan berlebihanmu, ketim
 *note jangan pernah memakai tabel kecuali untuk bagian summary hasi akhir"""
 
 generation_config = {
-    "max_output_tokens": 4000,
+    "max_output_tokens": 8000,
     "temperature": 1,
     "top_p": 0.95,
 }
