@@ -15,6 +15,8 @@ from vertexai.generative_models import GenerativeModel, Part, SafetySetting
 import markdown
 import json
 from dotenv import load_dotenv
+import threading
+
 
 app = Flask(__name__)
 
@@ -181,14 +183,14 @@ def index():
     return jsonify({
         "status": {
             "code": 200,
-            "message": "Success fetching the API",
+            "message": "Welcome to model api NV Bite🍃",
         },
         "data": None
     }), 200
 
 
 @app.route("/predict_image", methods=["POST"])
-def predict_image():
+def predict_image_with_gentext():
     if "image" not in request.files:
         return jsonify({
             "status": {
@@ -200,33 +202,26 @@ def predict_image():
 
     image = request.files["image"]
     if image and allowed_file(image.filename):
-        # Generate a unique filename
         unique_filename = str(uuid.uuid4()) + secure_filename(image.filename)
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
-        image.save(file_path)  # Simpan gambar
+        image.save(file_path)
 
-        # Preprocess the image
         img_array = preprocess_image(file_path)
 
-        # Start timing prediction
         start_predict_time = time.time()
 
-        # Predict the image
         prediction = model.predict(img_array)
         predicted_class, confidence = decode_prediction(prediction)
 
-        # Generate text using Vertex AI
+        # Menghasilkan teks menggunakan Vertex AI
         generated_text = generate_text(predicted_class)
 
-        # End timing prediction
         end_predict_time = time.time()
         predict_time = end_predict_time - start_predict_time
 
-        # Upload image to cloud storage
         upload_to_gcs(file_path, BUCKET_NAME,
                       f"upload_image/{unique_filename}")
 
-        # Remove the saved image after prediction
         os.remove(file_path)
 
         return jsonify({
@@ -241,6 +236,70 @@ def predict_image():
                 "predict_time": predict_time
             }
         }), 200
+    else:
+        return jsonify({
+            "status": {
+                "code": 400,
+                "message": "Invalid file type",
+            },
+            "data": None
+        }), 400
+
+
+@app.route("/predict_streamlit", methods=["POST"])
+def predict_image_no_gentext():
+    if "image" not in request.files:
+        return jsonify({
+            "status": {
+                "code": 400,
+                "message": "No image provided",
+            },
+            "data": None
+        }), 400
+
+    image = request.files["image"]
+    if image and allowed_file(image.filename):
+        # Generate a unique filename
+        unique_filename = str(uuid.uuid4()) + secure_filename(image.filename)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
+        image.save(file_path)  # Save the uploaded image
+
+        # Preprocess the image
+        img_array = preprocess_image(file_path)
+
+        # Start prediction timing
+        start_predict_time = time.time()
+
+        # Predict the image
+        prediction = model.predict(img_array)
+        predicted_class, confidence = decode_prediction(prediction)
+
+        # End prediction timing
+        end_predict_time = time.time()
+        predict_time = end_predict_time - start_predict_time
+
+        # Return prediction results to the client
+        response = jsonify({
+            "status": {
+                "code": 200,
+                "message": "Success",
+            },
+            "data": {
+                "predicted_class": predicted_class,
+                "confidence": float(confidence),
+                "predict_time": predict_time
+            }
+        })
+
+        # Start GCS upload asynchronously
+        def upload_to_gcs_async():
+            upload_to_gcs(file_path, BUCKET_NAME,
+                          f"upload_image/{unique_filename}")
+            os.remove(file_path)  # Remove the image after upload
+
+        threading.Thread(target=upload_to_gcs_async).start()
+
+        return response
     else:
         return jsonify({
             "status": {
