@@ -34,7 +34,7 @@ Ensure you have the following installed on your machine:
 - Flask
 - TensorFlow
 - Docker (optional for containerized deployment)
-- account gcp (if u use google product)
+- service gcp (especially service secret manager, gcs)
 
 ### Installation Steps
 
