@@ -12,7 +12,6 @@ certifi==2024.8.30
 charset-normalizer==3.4.0
 click==8.1.7
 colorama==0.4.6
-fastapi==0.115.5
 Flask==3.1.0
 flatbuffers==24.3.25
 gast==0.6.0
