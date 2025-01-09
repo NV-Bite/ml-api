@@ -18,9 +18,11 @@ from dotenv import load_dotenv
 import threading
 import re
 import google.generativeai as genai
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)
 
 app.config["ALLOWED_EXTENSIONS"] = {"jpg", "jpeg", "png"}
 app.config["UPLOAD_FOLDER"] = "static/uploads"
