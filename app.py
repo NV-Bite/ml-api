@@ -16,6 +16,8 @@ import markdown
 import json
 from dotenv import load_dotenv
 import threading
+import re
+import google.generativeai as genai
 
 
 app = Flask(__name__)
@@ -57,6 +59,9 @@ PROJECT_ID = credentials['project_id']
 print(f"Project ID: {PROJECT_ID}")
 LOCATION = credentials['location']
 MODEL_ID = credentials['model_id']
+instruction = credentials['system_instruction']
+key_api = credentials['key_api']
+chatbot = credentials['chatbot']
 
 
 # Download model from GCS
@@ -93,7 +98,6 @@ class_labels = ['Ayam Goreng', 'Burger', 'French Fries', 'Gado-Gado', 'Ikan Gore
                 'Mie Goreng', 'Nasi Goreng', 'Nasi Padang', 'Pizza', 'Rawon',
                 'Rendang', 'Sate', 'Soto Ayam']
 
-instruction = os.getenv('SYSTEM_INSTRUCTION')
 
 generation_config = {
     "max_output_tokens": 8000,
@@ -253,6 +257,98 @@ def predict_image_no_gentext():
         }), 400
 
 
+genai.configure(api_key=key_api)
+
+# Create the model
+generation_config = {
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 40,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+
+model = genai.GenerativeModel(
+    model_name="gemini-2.0-flash-exp",
+    generation_config=generation_config,
+    system_instruction=chatbot,
+)
+
+chat_session = model.start_chat(
+    history=[
+        {
+            "role": "user",
+            "parts": [
+                "berikan summary nya ",
+            ],
+        },
+        {
+            "role": "model",
+            "parts": [
+                "Tentu, berikut adalah ringkasan singkat tentang Rizky Yanuar Kristianto:\n\nRizky adalah seorang mahasiswa S1 Data Science berusia 21 tahun di Surabaya, dengan IPK 3,47. Ia memiliki pengalaman sebagai ketua penelitian dan anggota staf divisi advokasi mahasiswa. Rizky memiliki keahlian teknis dalam Python, Tableau, Microsoft Office, dan TensorFlow, serta keahlian tambahan di Data Mining, Deep Learning, Data Visualization, dan Manajemen Proyek. Ia juga memiliki beberapa proyek penting, termasuk prediksi depresi dari data ucapan, analisis sentimen penerima KIPK berdasarkan tweet, dan pengembangan aplikasi pelacak jejak karbon makanan NV-Bite. Rizky memiliki kemampuan analisis yang kuat dan antusiasme dalam bidang data science.\n",
+            ],
+        },
+        {
+            "role": "user",
+            "parts": [
+                "berikan project projectnya ",
+            ],
+        },
+        {
+            "role": "model",
+            "parts": [
+                "Rizky Yanuar Kristianto memiliki beberapa proyek penting, yaitu:\n1.  **Prediksi Depresi dari Data Ucapan**: Mengembangkan model prediktif untuk mengidentifikasi indikator depresi dari data ucapan, yang dipresentasikan pada simposium penelitian universitas.\n2.  **Analisis Sentimen Penerima KIPK Berdasarkan Tweet di Platform X**: Menganalisis sentimen tweet terkait penerima KIPK menggunakan NLP dan memvisualisasikan hasilnya.\n3.  **NV-Bite: Aplikasi Pelacak Jejak Karbon Makanan**: Membangun model pembelajaran mesin untuk pengenalan makanan dan estimasi jejak karbon, berkolaborasi dengan tim cloud dan mobile untuk integrasi aplikasi.\n",
+            ],
+        },
+        {
+            "role": "user",
+            "parts": [
+                "summary cvnya",
+            ],
+        },
+        {
+            "role": "model",
+            "parts": [
+                "Rizky Yanuar Kristianto adalah mahasiswa S1 Data Science di Surabaya dengan IPK 3,47, memiliki pengalaman sebagai ketua penelitian dan aktif dalam organisasi mahasiswa. Ia memiliki keahlian teknis seperti Python, Tableau, dan TensorFlow, serta keahlian tambahan dalam Data Mining dan Deep Learning. Rizky juga memiliki pengalaman proyek dalam analisis data dan pengembangan aplikasi, menunjukkan kemampuan analisis dan pemecahan masalah yang kuat.\n",
+            ],
+        },
+        {
+            "role": "user",
+            "parts": [
+                "berikan dalam perpoin",
+            ],
+        },
+        {
+            "role": "model",
+            "parts": [
+                "Baik, berikut adalah poin-poin ringkasan CV Rizky Yanuar Kristianto:\n\n*   **Identitas:**\n    *   Nama: Rizky Yanuar Kristianto\n    *   Usia: 21 tahun\n    *   Domisili: Surabaya\n    *   Pendidikan: Mahasiswa S1 Data Science, Universitas Negeri Surabaya (IPK: 3,47/4,0)\n*   **Pengalaman:**\n    *   Ketua Penelitian, Fakultas Matematika dan Ilmu Pengetahuan Alam, Universitas Negeri Surabaya\n    *   Anggota Staf, Divisi Advokasi dan Kesejahteraan Mahasiswa, Himpunan Mahasiswa Data Science, Universitas Negeri Surabaya\n*   **Proyek:**\n    *   Prediksi Depresi dari Data Ucapan\n    *   Analisis Sentimen Penerima KIPK Berdasarkan Tweet di Platform X\n    *   NV-Bite: Aplikasi Pelacak Jejak Karbon Makanan\n*   **Keahlian:**\n    *   Teknis: Python, Tableau, Microsoft Office, TensorFlow\n    *   Tambahan: Data Mining, Deep Learning, Data Visualization, Manajemen Proyek\n*   **Deskripsi Singkat:**\n    *   Mahasiswa S1 Data Science dengan keterampilan analisis yang kuat, kemampuan pemecahan masalah berbasis data, dan pemikiran kritis.\n    *   Berfokus pada penerapan pengetahuan akademik untuk menyelesaikan tantangan berbasis data.\n    *   Memiliki antusiasme tinggi dalam berkontribusi pada proyek-proyek berdampak, sambil terus mengembangkan keahlian di bidang data science.\n",
+            ],
+        },
+    ]
+)
+
+
+@app.route("/chatbot", methods=["POST"])
+def predict_website():
+    data = request.get_json()
+    message = data.get('message')
+    print(f"Message: {message}")
+    if not message:
+        return jsonify({
+            "status": {
+                "code": 400,
+                "message": "No message provided",
+            },
+            "data": None
+        }), 400
+
+    # Generate text using Vertex AI
+    answer = chatbot(message)
+    print(f"Generated Text: {answer}")
+    message = {"answer": answer}
+    return jsonify(message)
+
+
 def preprocess_image(image_path):
     img = load_img(image_path, target_size=(300, 300))
     img_array = img_to_array(img)  # Convert to numpy array
@@ -298,6 +394,30 @@ def generate_text(predicted_class):
     html_content = markdown.markdown(
         generated_text, extensions=["tables"])
     generated_text = html_content.replace("\n", "")
+    return generated_text
+
+
+def chatbot(input_text):
+    response = chat_session.send_message(input_text)
+    generated_text = response.text
+    generated_text = re.sub(
+        r'^(#{1})\s*(.*?)$', r'<h1>\2</h1>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(
+        r'^(#{2})\s*(.*?)$', r'<h2>\2</h2>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(
+        r'^(#{3})\s*(.*?)$', r'<h3>\2</h3>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(
+        r'\*\*(.*?)\*\*', r'<strong>\1</strong>', generated_text)
+    generated_text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', generated_text)
+    generated_text = re.sub(
+        r'^[\*\-]\s+(.*)$', r'<ul><li>\1</li></ul>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(
+        r'^\s{2,}[\*\-]\s+(.*)$', r'<ul><li>\1</li></ul>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(r'\[(.*?)\]\((.*?)\)',
+                            r'<a href="\2">\1</a>', generated_text)
+    generated_text = re.sub(
+        r'^>\s*(.*)$', r'<blockquote>\1</blockquote>', generated_text, flags=re.MULTILINE)
+    generated_text = re.sub(r'(^|\n)([^\n]+)', r'<p>\2</p>', generated_text)
     return generated_text
 
 
