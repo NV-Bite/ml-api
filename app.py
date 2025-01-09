@@ -58,10 +58,15 @@ MODEL_PATH = credentials['model_path']
 PROJECT_ID = credentials['project_id']
 print(f"Project ID: {PROJECT_ID}")
 LOCATION = credentials['location']
+print(f"Location: {LOCATION}")
 MODEL_ID = credentials['model_id']
-instruction = credentials['system_instruction']
-key_api = credentials['key_api']
-chatbot = credentials['chatbot']
+print(f"Model ID: {MODEL_ID}")
+SYSTEM_INSTRUCTION = credentials['system_instruction']
+print(f"System Instruction: {SYSTEM_INSTRUCTION}")
+KEY_API = credentials['key_api']
+print(f"Key API: {KEY_API}")
+CHATBOT = credentials['chatbot']
+print(f"Chatbot: {CHATBOT}")
 
 
 # Download model from GCS
@@ -257,7 +262,7 @@ def predict_image_no_gentext():
         }), 400
 
 
-genai.configure(api_key=key_api)
+genai.configure(api_key=KEY_API)
 
 # Create the model
 generation_config = {
@@ -271,7 +276,7 @@ generation_config = {
 model = genai.GenerativeModel(
     model_name="gemini-2.0-flash-exp",
     generation_config=generation_config,
-    system_instruction=chatbot,
+    system_instruction=CHATBOT,
 )
 
 chat_session = model.start_chat(
@@ -379,7 +384,7 @@ def generate_text(predicted_class):
     vertexai.init(project=PROJECT_ID, location=LOCATION)
     model = GenerativeModel(
         "gemini-1.5-flash",
-        system_instruction=instruction,
+        system_instruction=SYSTEM_INSTRUCTION,
     )
     responses = model.generate_content(
         [predicted_class],
