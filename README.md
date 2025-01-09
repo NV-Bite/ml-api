@@ -45,12 +45,22 @@ Ensure you have the following installed on your machine:
    ```
 
 2. **Create and Configure Environment Variables**:
-   Create a `.env` file in the root directory with the following content:
+   Create a `.env.example` file in the root directory with the following content:
    ```env
    PROJECT_ID=your_project_id
-   LOCATION=asia-your_location
-   BUCKET_NAME=your_bucket_name
-   MODEL_PATH=your_model_path
+   ```
+3. **Set Up Secret Manager Variables**
+   Store the following keys as secrets in your Secret Manager to securely handle sensitive information:
+   ```json
+   {
+     "type": "service_account",
+     "project_id": "your_project_id",
+     "location": "your_location",
+     "bucket_name": "your_bucket_name",
+     "model_path": "your_model_path",
+     "model_id": "your_model_id",
+     "system_instruction": "your_instruction"
+   }
    ```
 
 3. **Install Dependencies**:
