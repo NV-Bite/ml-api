@@ -33,9 +33,6 @@ MODEL_ID = "gemini-1.5-flash"
 
 model = None
 
-# Mengakses Secret dari Secret Manager
-
-
 def get_secret(secret_name):
     client = secretmanager.SecretManagerServiceClient()
     project_id = os.getenv('PROJECT_ID')
